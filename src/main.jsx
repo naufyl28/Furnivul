@@ -14,7 +14,7 @@ import Register from "./pages/Register.jsx";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/dashboard.jsx";
 import Status from "./pages/status.jsx";
-import Mystore from "./pages/mystore.jsx";
+import Mystore from "./pages/Mystore.jsx";
 import LandingPage from "./pages/LandingPage.jsx";
 
 // Import Article pages
