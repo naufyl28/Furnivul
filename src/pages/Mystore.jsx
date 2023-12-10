@@ -29,7 +29,7 @@ const Mystore = () => {
         if (!response.ok) {
           throw new Error("Failed to fetch transactions from mock API");
         }
-
+        
         const transactionsData = await response.json();
 
         const transactionsWithId = transactionsData.map(
