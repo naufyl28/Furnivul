@@ -49,7 +49,7 @@ const Mystore = () => {
   }, []);
 
   const handleStatusChange = async (index, selectedStatus) => {
-    // ... (status change logic)
+    
   };
 
   const handleAddFurniture = () => {
@@ -73,10 +73,10 @@ const Mystore = () => {
 
       const productsData = await response.json();
 
-      // Periksa struktur respons
+ 
       console.log("Products Data:", productsData);
 
-      // Sesuaikan dengan struktur respons jika perlu
+      
       const productsArray = productsData.data || productsData;
 
       setAllProducts(productsArray);
@@ -88,7 +88,7 @@ const Mystore = () => {
 
   const handleSaveProduct = async () => {
     try {
-      // ... (save/update product logic)
+      
 
       setIsModalOpen(false);
       setEditingProduct(null);
@@ -157,7 +157,7 @@ const Mystore = () => {
                   </Select>
                 </Table.Cell>
               </Table.Row>
-              {/* Optional: Tambahkan Table.Row untuk data produk di sini jika diperlukan */}
+              {}
             </React.Fragment>
           ))}
         </Table.Body>
