@@ -15,7 +15,7 @@ function Address() {
   return (
     <>
       <div className="mx-auto overflow-hidden ">
-        {/* Tampilkan data di sini */}
+        {}
       </div>
 
       <div className="p-8">
@@ -28,7 +28,7 @@ function Address() {
       </div>
       <div>
         <div className="my-4 flex items-center justify-between max-w-screen-xl mx-auto p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover-bg-gray-700">
-          {/* Tampilkan data di sini */}
+          {}
           <div className="flex flex-col">
             <div className="text-2xl font-bold mb-4"> ALAMAT ANDA : </div>
             <div className="flex flex-col">

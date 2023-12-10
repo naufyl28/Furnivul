@@ -49,7 +49,45 @@ const Mystore = () => {
   }, []);
 
   const handleStatusChange = async (index, selectedStatus) => {
-    
+    try {
+      const updatedTransactions = [...transactions];
+      updatedTransactions[index].status = selectedStatus;
+      setTransactions(updatedTransactions);
+
+      const transactionId = transactions[index].id;
+      const productName = transactions[index].products[0].name;
+      const productId = findProductIdByName(productName);
+
+      // Menghindari pengiriman status default ke API
+      if (selectedStatus !== "DefaultStatus") {
+        const response = await fetch(
+          `https://65312ee04d4c2e3f333c9120.mockapi.io/Transcationdetails/${transactionId}`,
+          {
+            method: "PUT", // Gunakan PUT untuk memperbarui data yang sudah ada
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              ...transactions[index], // Kirim seluruh objek transaksi yang telah diperbarui
+              productId: productId,
+              status: selectedStatus,
+            }),
+          }
+        );
+
+        if (!response.ok) {
+          console.error(
+            "Failed to update status to the API. Response:",
+            response
+          );
+          throw new Error("Failed to update status to the API");
+        }
+
+        console.log("Status updated successfully!");
+      }
+    } catch (error) {
+      console.error("Error updating transaction status:", error);
+    }
   };
 
   const handleAddFurniture = () => {
