@@ -15,7 +15,6 @@ import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/dashboard.jsx";
 import Status from "./pages/status.jsx";
 import Mystore from "./pages/mystore.jsx"
-// Import outlet pages
 import LandingPage from "./pages/LandingPage.jsx";
 
 // Import Article pages
