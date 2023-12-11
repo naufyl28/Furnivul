@@ -1,20 +1,35 @@
+// @ts-check
 import React, { useEffect, useState } from "react";
 import { Breadcrumb, Button } from "flowbite-react";
 import { FaCartShopping } from "react-icons/fa6";
-import { useParams, NavLink } from "react-router-dom"; // Add this line
+import { useParams, NavLink } from "react-router-dom";
 import axios from "axios";
 
-function ListingProduct() {
-  const [datas, setData] = useState([]);
-  const [sortOrder, setSortOrder] = useState("asc"); // Declare sortOrder here
+/**
+ * @typedef {Object} Product
+ * @property {string} _id
+ * @property {string} product_name
+ * @property {string} product_category
+ * @property {number} product_sold
+ * @property {number} product_price
+ * @property {string} product_image
+ */
+
+/**
+ * @type {React.FC}
+ */
+const ListingProduct = () => {
+  const [datas, setDatas] = useState(/** @type {Product[]} */ ([]));
+  const [sortOrder, setSortOrder] = useState("asc");
+
   const { categoryId } = useParams();
-  // console.log(categoryId);
+
   useEffect(() => {
     axios
       .get(
         `https://furnivul-web-app-production.up.railway.app/product-categories/${categoryId}`
       )
-      .then((result) => setData(result.data.data))
+      .then((result) => setDatas(result.data.data))
       .catch((error) => console.error("Error fetching products:", error));
   }, [categoryId]);
 
@@ -95,7 +110,6 @@ function ListingProduct() {
                     <p>Rp {item.product_price.toLocaleString()},-</p>
                   </div>
                   <Button className="mt-8 text-black bg-yellow-300 border border-gray-800 hover:bg-blue-800 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                    {/* Use NavLink instead of a */}
                     <NavLink
                       to={`/category-product/list-product/detail-product/${item._id}`}
                     >
@@ -110,5 +124,6 @@ function ListingProduct() {
       </div>
     </>
   );
-}
+};
+
 export default ListingProduct;
