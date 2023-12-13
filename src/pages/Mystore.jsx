@@ -19,6 +19,7 @@ const Mystore = () => {
   });
   const [editingProduct, setEditingProduct] = useState(null);
   const [allProducts, setAllProducts] = useState([]);
+  const [passedStatuses, setPassedStatuses] = useState([]);
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -29,13 +30,14 @@ const Mystore = () => {
         if (!response.ok) {
           throw new Error("Failed to fetch transactions from mock API");
         }
-        
+
         const transactionsData = await response.json();
 
         const transactionsWithId = transactionsData.map(
           (transaction, index) => ({
             ...transaction,
             id: index.toString(),
+            isStatusEditable: transaction.status !== "Delivered",
           })
         );
 
@@ -50,43 +52,141 @@ const Mystore = () => {
 
   const handleStatusChange = async (index, selectedStatus) => {
     try {
+      const transaction = transactions[index];
+
+      if (
+        !transaction.isStatusEditable ||
+        passedStatuses.includes(selectedStatus)
+      ) {
+        console.log("Cannot change status for this transaction.");
+        return;
+      }
+
       const updatedTransactions = [...transactions];
+      const currentStatusIndex = transactionStatusOrder.indexOf(
+        transaction.status
+      );
+      const selectedStatusIndex =
+        transactionStatusOrder.indexOf(selectedStatus);
+
+      if (currentStatusIndex >= selectedStatusIndex) {
+        console.log("Cannot move back to the previous status.");
+        return;
+      }
+
       updatedTransactions[index].status = selectedStatus;
       setTransactions(updatedTransactions);
 
-      const transactionId = transactions[index].id;
-      const productName = transactions[index].products[0].name;
-      const productId = findProductIdByName(productName);
+      setPassedStatuses((prevStatuses) => [...prevStatuses, selectedStatus]);
 
-      // Menghindari pengiriman status default ke API
-      if (selectedStatus !== "DefaultStatus") {
-        const response = await fetch(
-          `https://65312ee04d4c2e3f333c9120.mockapi.io/Transcationdetails/${transactionId}`,
-          {
-            method: "PUT", // Gunakan PUT untuk memperbarui data yang sudah ada
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              ...transactions[index], // Kirim seluruh objek transaksi yang telah diperbarui
-              productId: productId,
-              status: selectedStatus,
-            }),
-          }
-        );
+      const transactionId = transactions[index].type;
 
-        if (!response.ok) {
-          console.error(
-            "Failed to update status to the API. Response:",
-            response
-          );
-          throw new Error("Failed to update status to the API");
+      const response = await fetch(
+        `https://65312ee04d4c2e3f333c9120.mockapi.io/Transcationdetails/${transactionId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            status: selectedStatus,
+          }),
         }
+      );
 
-        console.log("Status updated successfully!");
+      if (!response.ok) {
+        throw new Error(
+          `Failed to update status in mock API: ${response.statusText}`
+        );
       }
     } catch (error) {
-      console.error("Error updating transaction status:", error);
+      console.error("Error updating status:", error);
+    }
+  };
+
+  const transactionStatusOrder = [
+    "Manifest",
+    "On-Process",
+    "On-Transit",
+    "Received On Destination",
+    "Delivered",
+  ];
+
+  const authenticateAdmin = async () => {
+    try {
+      const response = await fetch(
+        "https://furnivul-web-app-production.up.railway.app/auth/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: "admin@gmail.com",
+            password: "admin123",
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to authenticate admin: ${response.statusText}`);
+      }
+
+      const responseData = await response.json();
+
+      console.log("Login Response Data:", responseData);
+
+      if (!responseData.data || !responseData.data.token) {
+        throw new Error("Token is missing in the response data.");
+      }
+
+      const adminToken = responseData.data.token;
+
+      return adminToken;
+    } catch (error) {
+      console.error("Error authenticating admin:", error);
+      throw error;
+    }
+  };
+
+  const handleAddProduct = async () => {
+    try {
+      const adminToken = await authenticateAdmin();
+
+      if (!adminToken) {
+        console.error("Failed to get admin token.");
+        return;
+      }
+
+      console.log("Data yang dikirim:", newProduct);
+
+      const response = await fetch(
+        "https://furnivul-web-app-production.up.railway.app/products",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${adminToken}`,
+          },
+          body: JSON.stringify(newProduct),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error(
+          `Failed to add product: ${response.statusText}`,
+          errorData
+        );
+        throw new Error(`Failed to add product: ${response.statusText}`);
+      }
+
+      setIsModalOpen(false);
+      setEditingProduct(null);
+
+      handleAllProducts();
+    } catch (error) {
+      console.error("Error adding product:", error);
     }
   };
 
@@ -111,10 +211,6 @@ const Mystore = () => {
 
       const productsData = await response.json();
 
- 
-      console.log("Products Data:", productsData);
-
-      
       const productsArray = productsData.data || productsData;
 
       setAllProducts(productsArray);
@@ -124,10 +220,37 @@ const Mystore = () => {
     }
   };
 
+  const handleDeleteProduct = async (productId) => {
+    try {
+      const adminToken = await authenticateAdmin();
+
+      if (!adminToken) {
+        console.error("Failed to get admin token.");
+        return;
+      }
+
+      const response = await fetch(
+        `https://furnivul-web-app-production.up.railway.app/products/${productId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${adminToken}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete product: ${response.statusText}`);
+      }
+
+      handleAllProducts();
+    } catch (error) {
+      console.error("Error deleting product:", error);
+    }
+  };
+
   const handleSaveProduct = async () => {
     try {
-      
-
       setIsModalOpen(false);
       setEditingProduct(null);
     } catch (error) {
@@ -138,6 +261,7 @@ const Mystore = () => {
   const handleNewProductInputChange = (fieldName, value) => {
     setNewProduct((prevProduct) => ({
       ...prevProduct,
+      _typeId: fieldName === "_typeId" ? value : prevProduct._typeId,
       [fieldName]: value,
     }));
   };
@@ -181,18 +305,24 @@ const Mystore = () => {
                   {transaction.totalPrice.toLocaleString("id-ID")}
                 </Table.Cell>
                 <Table.Cell>
-                  <Select
-                    value={transaction.status || ""}
-                    onChange={(e) => handleStatusChange(index, e.target.value)}
-                  >
-                    <option value="Manifest">Manifest</option>
-                    <option value="On-Process">On-Process</option>
-                    <option value="On-Transit">On-Transit</option>
-                    <option value="Received On Destination">
-                      Received On Destination
-                    </option>
-                    <option value="Delivered">Delivered</option>
-                  </Select>
+                  {transaction.isStatusEditable ? (
+                    <Select
+                      value={transaction.status || ""}
+                      onChange={(e) =>
+                        handleStatusChange(index, e.target.value)
+                      }
+                    >
+                      <option value="Manifest">Manifest</option>
+                      <option value="On-Process">On-Process</option>
+                      <option value="On-Transit">On-Transit</option>
+                      <option value="Received On Destination">
+                        Received On Destination
+                      </option>
+                      <option value="Delivered">Delivered</option>
+                    </Select>
+                  ) : (
+                    transaction.status
+                  )}
                 </Table.Cell>
               </Table.Row>
               {}
@@ -267,6 +397,31 @@ const Mystore = () => {
               />
             </div>
             <div>
+              <div className="mb-2 block">
+                <Label htmlFor="productType" value="Product Type" />
+              </div>
+              <Select
+                id="productType"
+                sizing="md"
+                value={newProduct._typeId}
+                onChange={(e) =>
+                  handleNewProductInputChange("_typeId", e.target.value)
+                }
+              >
+                <option value="6553b83f7ca0f30a1a2a7447">Sofa</option>
+                <option value="6553efacd3596984234008d3">Single Bed</option>
+                <option value="655a2ff67b4f6c96f968e723">Kursi Kantor</option>
+                <option value="655a30007b4f6c96f968e725">Meja Kantor</option>
+                <option value="655a30157b4f6c96f968e727">Kabinet dapur</option>
+                <option value="655a303d7b4f6c96f968e729">Meja Makan</option>
+                <option value="655a304b7b4f6c96f968e72b">kursi Makan</option>
+                <option value="655a30cf7b4f6c96f968e72d">Bed Queen</option>
+                <option value="655a30d67b4f6c96f968e72f">Bed king</option>
+                <option value="655a30e57b4f6c96f968e731">Meja tamu</option>
+                {}
+              </Select>
+            </div>
+            <div>
               {}
               {}
               <div className="mb-2 block">
@@ -321,7 +476,7 @@ const Mystore = () => {
         </Modal.Body>
         <Modal.Footer>
           <Button onClick={handleCloseModal}>Cancel</Button>
-          <Button onClick={handleAllProducts}>Add Product</Button>
+          <Button onClick={handleAddProduct}>Add Product</Button>
         </Modal.Footer>
       </Modal>
 

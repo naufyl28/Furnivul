@@ -17,7 +17,6 @@ function Checkout(props) {
   const [selectedCourier, setSelectedCourier] = useState("");
   const token = JSON.parse(localStorage.getItem("token"));
 
-  // Additional data from localStorage
   const name = JSON.parse(localStorage.getItem("name")) || "";
   const phone = JSON.parse(localStorage.getItem("phone")) || "";
   const province = JSON.parse(localStorage.getItem("province")) || "";
@@ -25,10 +24,8 @@ function Checkout(props) {
   const subdistrict = JSON.parse(localStorage.getItem("subdistrict")) || "";
   const zipcode = JSON.parse(localStorage.getItem("zipcode")) || "";
 
-  // Manggil product data dari local storage
   const productData = JSON.parse(localStorage.getItem("cart")) || [];
 
-  // Manggil data price dari local storage
   const totalPrice = JSON.parse(localStorage.getItem("totalPrice")) || 0;
 
   useEffect(() => {
@@ -48,7 +45,6 @@ function Checkout(props) {
         console.log("Error response data:", error.response.data);
       });
 
-    // Mengambil total harga dari localStorage
     const storedTotalPrice =
       JSON.parse(localStorage.getItem("totalPrice")) || 0;
     setSelectedCourier(JSON.parse(localStorage.getItem("priceCourier")) || "");
@@ -56,7 +52,6 @@ function Checkout(props) {
   }, [token]);
 
   const calculateTotalPrice = () => {
-    // Mengambil total harga dari localStorage
     const totalPriceWithoutCourier =
       productData.reduce(
         (acc, item) => acc + item.product_price * (item.quantity || 1),
@@ -77,7 +72,6 @@ function Checkout(props) {
     const selectedCourierValue = event.target.value;
     setSelectedCourier(selectedCourierValue);
 
-    // Recalculate total price based on the selected courier
     const newTotalPrice = calculateTotalPrice();
 
     localStorage.setItem("priceCourier", JSON.stringify(selectedCourierValue));
@@ -113,23 +107,6 @@ function Checkout(props) {
       </Modal>
 
       <Card className="w-full">
-        <Card>
-          <h1 className="text-2xl font-semibold">
-            Tingkatkan keamanan akun anda!
-          </h1>
-          <p>
-            Tingkatkan keamanan akun anda dengan mengaktifkan autentikasi dua
-            faktor. Dengan menggunakan autentikasi dua faktor dapat memberikan
-            proteksi terhadap akun anda. Untuk lebih lengkapnya klik disini!.
-          </p>
-          <div>
-            <Button className="" onClick={() => setOpenModal(true)}>
-              Mengerti
-            </Button>{" "}
-          </div>
-        </Card>
-
-        {/* Display additional data from localStorage */}
         <div className="text-md font-semibold my-3">
           <Card className="w-full">
             <h1 className="text-2xl font-semibold">Address</h1>
@@ -142,7 +119,7 @@ function Checkout(props) {
           </Card>
         </div>
 
-        {/* Display product data */}
+        {}
         <Card className="mt-3 justify-center">
           {productData.map((item, index) => (
             <div key={index} className="flex items-center">

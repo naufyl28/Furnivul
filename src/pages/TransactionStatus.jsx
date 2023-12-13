@@ -70,7 +70,6 @@ const TransactionStatus = () => {
      Total Pembayaran: Rp ${totalPrice.toLocaleString("id-ID")}
    `;
 
-    // Download receipt
     const blob = new Blob([receiptText], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -81,7 +80,6 @@ const TransactionStatus = () => {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    // Kirim data transaksi ke mock API
     try {
       const response = await sendTransactionToMockAPI(transactionData);
       console.log("Transaction sent to mock API:", response);
@@ -89,26 +87,12 @@ const TransactionStatus = () => {
       console.error("Error handling download receipt:", error);
     }
 
-localStorage.removeItem("cart");
-localStorage.removeItem("totalPrice");
+    localStorage.removeItem("cart");
+    localStorage.removeItem("totalPrice");
   };
 
   return (
     <div className="mx-7">
-      <Breadcrumb
-        aria-label="Solid background breadcrumb example"
-        className="bg-gray-50 py-3 dark:bg-gray-800"
-      >
-        <Breadcrumb.Item href="#" icon={FaCartShopping}>
-          Home
-        </Breadcrumb.Item>
-        <Breadcrumb.Item href="#">Cart</Breadcrumb.Item>
-        <Breadcrumb.Item href="#">Address</Breadcrumb.Item>
-        <Breadcrumb.Item href="#">Checkout</Breadcrumb.Item>
-        <Breadcrumb.Item href="#">Payment</Breadcrumb.Item>
-        <Breadcrumb.Item href="#">Payment Status</Breadcrumb.Item>
-      </Breadcrumb>
-
       <div className="flex items-center justify-center mt-28 mb-16">
         <div className="items-center justify-center">
           <Card className="items-center">
@@ -134,7 +118,6 @@ localStorage.removeItem("totalPrice");
                 </p>
               </div>
               <div className="flex justify-center gap-3">
-                <Button href="/">Back to Home</Button>
                 {}
                 <div className="flex justify-center gap-3">
                   <Button color="blue" onClick={handleDownloadReceipt}>
@@ -148,8 +131,6 @@ localStorage.removeItem("totalPrice");
       </div>
     </div>
   );
-}
-
-
+};
 
 export default TransactionStatus;
